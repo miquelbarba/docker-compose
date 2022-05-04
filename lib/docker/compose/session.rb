@@ -27,15 +27,11 @@ module Docker::Compose
     # Project file; default is 'docker-compose.yml'
     attr_reader :file
 
-    # Optionally, pass --env_file to docker-compose
-    attr_reader :env_file
-
     # Reference to the last executed command.
     attr_reader :last_command
 
     def initialize(shell = Backticks::Runner.new(buffered: [:stderr], interactive: true),
-                   dir: Dir.pwd, project_name: nil, file: 'docker-compose.yml',
-                   env_file: nil)
+                   dir: Dir.pwd, project_name: nil, file: 'docker-compose.yml')
       @shell = shell
       @project_name = project_name
       @dir = dir
@@ -274,8 +270,6 @@ module Docker::Compose
         # a single String (or Pathname, etc); use normal sugar to add it
         [{ file: @file.to_s }]
       end
-
-      file_args << { env_file: env_file } if env_file
 
       @shell.chdir = dir
       @last_command = @shell.run('docker-compose', *project_name_args, *file_args, *args).join
