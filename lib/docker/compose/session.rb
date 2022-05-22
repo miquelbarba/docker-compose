@@ -35,13 +35,13 @@ module Docker::Compose
 
     def initialize(shell = Backticks::Runner.new(buffered: [:stderr], interactive: true),
                    dir: Dir.pwd, project_name: nil, file: 'docker-compose.yml',
-                   env_file: nil)
+                   env: nil)
       @shell = shell
       @project_name = project_name
       @dir = dir
       @file = file
       @last_command = nil
-      @env_file = env_file
+      @env = env
     end
 
     # Validate docker-compose file and return it as Hash
@@ -276,10 +276,11 @@ module Docker::Compose
         [{ file: @file.to_s }]
       end
 
-      file_args << { env_file: env_file } if env_file
-      
+      params = ['docker-compose', *project_name_args, *file_args, *args]
+      params = [@env.stringify_keys] + params if @env && !@env.empty?
+
       @shell.chdir = dir
-      @last_command = @shell.run('docker-compose', *project_name_args, *file_args, *args).join
+      @last_command = @shell.run(*params).join
       status = @last_command.status
       out = @last_command.captured_output
       err = @last_command.captured_error
